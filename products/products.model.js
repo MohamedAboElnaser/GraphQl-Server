@@ -1,4 +1,4 @@
-const products= [
+const products = [
     {
         id: "First product",
         description: "Key-board",
@@ -9,12 +9,24 @@ const products= [
         description: "screen",
         price: 100.9,
     },
+    {
+        id: "third product",
+        description: "Mouse",
+        price: 20,
+    },
 ];
 
-const getAllProducts=()=>{
+const getAllProducts = () => {
     return products;
 };
 
-module.exports={
-    getAllProducts
-}
+const filterProducts = (min, max) => {
+    const filteredProducts = products.filter((product) => {
+        return product.price >= min && product.price <= max;
+    });
+    return filteredProducts;
+};
+module.exports = {
+    getAllProducts,
+    filterProducts,
+};
