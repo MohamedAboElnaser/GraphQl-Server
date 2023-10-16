@@ -1,72 +1,40 @@
+const path = require("path");
 const express = require("express");
 const { buildSchema } = require("graphql");
-
-// this is a middleware which response to GraphQl queries
+//this function enable us to modular our schema
+const { makeExecutableSchema } = require("@graphql-tools/schema");
+// this is a middleware function which responses to GraphQl queries
 const { graphqlHTTP } = require("express-graphql");
+const { loadFilesSync } = require("@graphql-tools/load-files");
 
-// build the schema using buildSchema function
-const schema = buildSchema(`
-    type Query {
-        products: [Product]
-        orders: [Order]
-    }
+const typesArray = loadFilesSync("**/*", {
+    extensions: ["graphql"],
+});
+// build schema using makeExecutableSchema
+const schema = makeExecutableSchema({
+    typeDefs: typesArray,
+    resolvers: {
+        Query: {
+            products: async (parent, args, context, info) => {
+                console.log("loading products...");
+                const products = await Promise.resolve(parent.products);
+                return products;
+            },
+            orders: async (parent) => {
+                console.log("loading orders...");
+                const orders = await Promise.resolve(parent.orders);
+                return orders;
+            },
+        },
+    },
+});
 
-    type Product {
-        id: ID!
-        description:  String
-        reviews :[Review]
-        price: Float!
-    }
-
-    type Review {
-        rating : Float!
-        comment : String
-    }
-    type Order {
-        date : String!
-        subTotal: Float
-        items:[OrderItem]
-    }
-
-    type OrderItem {
-        product: Product!
-        quantity: Int!
-    }
-
-`);
-
-const app = express();
 const root = {
-    products: [
-        {
-            id: "First product",
-            description: "Key-board",
-            price: 50.89,
-        },
-        {
-            id: "second product",
-            description: "screen",
-            price: 100.9,
-        },
-    ],
-    orders: [
-        {
-            date: "2000-01-01",
-            subTotal: 100,
-            items: [
-                {
-                    product: {
-                        id: "First product",
-                        price: 30,
-                        description:'the first item in the products list'
-                    },
-                    quantity: 2,
-                },
-            ],
-        },
-    ],
+    products: require("./products/products.model"),
+    orders: require("./orders/order.model"),
 };
 
+const app = express();
 app.use(
     "/graphql",
     graphqlHTTP({
