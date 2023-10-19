@@ -26,7 +26,12 @@ const filterProducts = (min, max) => {
     });
     return filteredProducts;
 };
+
+const getProductById=(id)=>{
+    return products.find((product)=>product.id==id)
+}
 module.exports = {
     getAllProducts,
     filterProducts,
+    getProductById
 };
