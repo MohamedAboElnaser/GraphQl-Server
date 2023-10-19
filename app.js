@@ -1,8 +1,7 @@
 const path = require("path");
 const express = require("express");
-// this is a middleware function which responses to GraphQl queries
-const { graphqlHTTP } = require("express-graphql");
-const { buildSchema } = require("graphql");
+const { ApolloServer } = require("@apollo/server");
+const { expressMiddleware } = require("@apollo/server/express4");
 //this function enable us to modular our schema
 const { makeExecutableSchema } = require("@graphql-tools/schema");
 const { loadFilesSync } = require("@graphql-tools/load-files");
@@ -17,23 +16,27 @@ const resolversArray = loadFilesSync("**/*", {
     extensions: [".resolvers.js"],
 });
 
-// build schema using makeExecutableSchema
-const schema = makeExecutableSchema({
-    typeDefs: typesArray,
-    resolvers: resolversArray,
-});
+async function startApolloServer() {
+    const app = express();
 
-// const root = {
-//     products: require("./products/products.model"),
-//     orders: require("./orders/order.model"),
-// };
+    // build schema using makeExecutableSchema
+    const schema = makeExecutableSchema({
+        typeDefs: typesArray,
+        resolvers: resolversArray,
+    });
 
-const app = express();
-app.use(
-    "/graphql",
-    graphqlHTTP({
-        schema: schema,
-        graphiql: true,
-    })
-);
-module.exports = app;
+    const server = new ApolloServer({
+        schema,
+    });
+
+    await server.start();
+
+    app.use(express.json());
+    app.use("/graphql", expressMiddleware(server));
+
+    app.listen(3000, () =>
+        console.log("Apollo server Running at port 3000...")
+    );
+}
+
+startApolloServer();
