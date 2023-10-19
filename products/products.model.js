@@ -27,11 +27,22 @@ const filterProducts = (min, max) => {
     return filteredProducts;
 };
 
-const getProductById=(id)=>{
-    return products.find((product)=>product.id==id)
-}
+const getProductById = (id) => {
+    return products.find((product) => product.id == id);
+};
+
+const addNewProduct = (id, description, price) => {
+    const newProduct = {
+        id,
+        description,
+        price,
+    };
+    products.push(newProduct);
+    return newProduct;
+};
 module.exports = {
     getAllProducts,
     filterProducts,
-    getProductById
+    getProductById,
+    addNewProduct,
 };
